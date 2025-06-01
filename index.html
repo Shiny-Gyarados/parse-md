@@ -8,7 +8,7 @@
     </head>
     <body>
         <div class="container">
-            <article class="article"></article>
+            <article></article>
         </div>
         <script type="module">
             import { unified } from "https://esm.sh/unified@11?bundle";
@@ -20,13 +20,25 @@
             import remarkGfm from "https://esm.sh/remark-gfm@4.0.1";
             import rehypeShiki from "https://esm.sh/@shikijs/rehype@3.4.2";
 
+            const defaultShikiLangs = [
+                "javascript",
+                "typescript",
+                "css",
+                "html",
+                "json",
+                "markdown",
+                "scss",
+                "jsx",
+                "tsx",
+                "vue",
+            ];
+
             async function parseMarkdown({
                 remarkParseOptions,
                 remarkPlugins = [],
                 remarkRehypeOptions,
                 rehypePlugins = [],
                 source = "",
-                onError = () => {},
             }) {
                 const { content, data: frontmatter } = grayMatter(source);
                 const file = await unified()
@@ -38,8 +50,18 @@
                     .process(content);
                 return file;
             }
-            async function main() {
-                const response = await fetch("markdowns/vue3_composition_api_guide.md");
+
+            async function useMarkdown({
+                selector = "article",
+                mdUrl = "",
+                theme = "one-light",
+                langs = defaultShikiLangs,
+                remarkParseOptions,
+                remarkPlugins = [],
+                remarkRehypeOptions,
+                rehypePlugins = [],
+            }) {
+                const response = await fetch(mdUrl);
                 const data = await response.blob();
                 const source = await data.text();
                 const result = await parseMarkdown({
@@ -48,26 +70,28 @@
                         [
                             rehypeShiki,
                             {
-                                theme: "one-light",
-                                langs: [
-                                    "javascript",
-                                    "typescript",
-                                    "css",
-                                    "html",
-                                    "json",
-                                    "markdown",
-                                    "scss",
-                                    "jsx",
-                                    "tsx",
-                                    "vue",
-                                ],
+                                theme,
+                                langs,
                             },
                         ],
                     ],
                     source,
                 });
-                const article = document.querySelector(".article");
+                const article = document.querySelector(selector);
                 article.innerHTML = result.value;
+            }
+
+            async function main() {
+                try {
+                    await useMarkdown({
+                        mdUrl: "markdowns/vue3_composition_api_guide.md", // markdown 文件路徑
+                        selector: "article", // css 選擇器 決定 markdown 的顯示位置
+                        theme: "one-light", // code block 的主題色 參考 https://shiki.matsu.io/themes
+                        langs: defaultShikiLangs, // 支援的程式語言 參考 https://shiki.matsu.io/languages
+                    });
+                } catch (error) {
+                    console.log("error", error?.message ?? error);
+                }
             }
             main();
         </script>
