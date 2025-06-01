@@ -48,7 +48,7 @@
                     .use(rehypePlugins)
                     .use(rehypeStringify)
                     .process(content);
-                return file;
+                return { content: file, frontmatter };
             }
 
             async function useMarkdown({
@@ -64,8 +64,8 @@
                 const response = await fetch(mdUrl);
                 const data = await response.blob();
                 const source = await data.text();
-                const result = await parseMarkdown({
-                    remarkPlugins: [remarkGfm],
+                const { content } = await parseMarkdown({
+                    remarkPlugins: [remarkGfm, ...remarkPlugins],
                     rehypePlugins: [
                         [
                             rehypeShiki,
@@ -74,11 +74,14 @@
                                 langs,
                             },
                         ],
+                        ...rehypePlugins,
                     ],
+                    remarkParseOptions,
+                    remarkRehypeOptions,
                     source,
                 });
                 const article = document.querySelector(selector);
-                article.innerHTML = result.value;
+                article.innerHTML = content.value;
             }
 
             async function main() {
@@ -90,7 +93,7 @@
                         langs: defaultShikiLangs, // 支援的程式語言 參考 https://shiki.matsu.io/languages
                     });
                 } catch (error) {
-                    console.log("error", error?.message ?? error);
+                    console.error("error: ", error?.message ?? error);
                 }
             }
             main();
