@@ -164,6 +164,9 @@ theme: "dracula"; // Purple theme / 紫色主題
 theme: "nord"; // Blue theme / 藍色主題
 ```
 
+For more themes, check: https://shiki.matsu.io/themes  
+更多主題可以參考：https://shiki.matsu.io/themes
+
 ### Different file locations / 不同檔案位置
 
 ```javascript
